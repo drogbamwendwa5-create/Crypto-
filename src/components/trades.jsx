@@ -37,6 +37,16 @@ function Trades() {
   const addTradeLocal = (e) => {
     e.preventDefault();
 
+    // Check if a trade with the same coin already exists
+    const existingTrade = trades.find(
+      (trade) => trade.coin.toLowerCase() === form.coin.toLowerCase()
+    );
+
+    if (existingTrade) {
+      alert(`A trade for ${form.coin} already exists. Each coin can only have one trade.`);
+      return;
+    }
+
     const newTrade = {
       id: Date.now(),
       ...form,
