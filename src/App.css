@@ -1287,3 +1287,481 @@
     font-size: 1.2rem;
   }
 }
+
+/* Enhanced Trades Page Styles */
+.trades-page {
+  width: min(1400px, 100%);
+  margin: 0 auto;
+}
+
+.trades-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.trades-subtitle {
+  color: #9fb2c7;
+  font-size: 1.1rem;
+  margin-top: 8px;
+}
+
+.stats-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 180ms ease, border-color 180ms ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(114, 228, 185, 0.3);
+}
+
+.stat-card.primary {
+  background: linear-gradient(135deg, rgba(114, 228, 185, 0.15), rgba(99, 230, 190, 0.1));
+  border-color: rgba(114, 228, 185, 0.4);
+}
+
+.stat-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  color: #9fb2c7;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Trades Filters */
+.trades-filters {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-box svg {
+  width: 20px;
+  height: 20px;
+  color: #9fb2c7;
+}
+
+.search-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.search-box input::placeholder {
+  color: #6b7c8f;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group label {
+  color: #9fb2c7;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.filter-group select {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+/* Form improvements */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.optional {
+  color: #6b7c8f;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #63e6be, #72e4b9);
+  color: #08111f;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow: 0 8px 25px rgba(99, 230, 190, 0.3);
+}
+
+/* Table improvements */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.results-info {
+  color: #6b7c8f;
+  font-size: 0.9rem;
+}
+
+.coin-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background: rgba(114, 228, 185, 0.15);
+  color: #72e4b9;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.type-badge.long {
+  background: rgba(114, 228, 185, 0.2);
+  color: #72e4b9;
+}
+
+.type-badge.short {
+  background: rgba(255, 155, 143, 0.2);
+  color: #ff9b8f;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.status-badge.open {
+  background: rgba(255, 186, 73, 0.2);
+  color: #ffba49;
+}
+
+.status-badge.closed {
+  background: rgba(114, 228, 185, 0.2);
+  color: #72e4b9;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 6px;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+}
+
+.close-btn {
+  background: rgba(114, 228, 185, 0.2);
+  color: #72e4b9;
+}
+
+.close-btn:hover {
+  background: rgba(114, 228, 185, 0.3);
+}
+
+.edit-btn {
+  background: rgba(255, 186, 73, 0.2);
+  color: #ffba49;
+}
+
+.edit-btn:hover {
+  background: rgba(255, 186, 73, 0.3);
+}
+
+.delete-btn {
+  background: rgba(255, 100, 100, 0.2);
+  color: #ff6464;
+}
+
+.delete-btn:hover {
+  background: rgba(255, 100, 100, 0.3);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7c8f;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+/* Accounts page enhancements */
+.accounts-header {
+  margin-bottom: 32px;
+}
+
+.account-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #9fb2c7;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.tab-btn.active {
+  background: rgba(114, 228, 185, 0.2);
+  border-color: rgba(114, 228, 185, 0.4);
+  color: #72e4b9;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.member-since {
+  color: #6b7c8f;
+  font-size: 0.85rem;
+}
+
+/* Stats section in accounts */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.holdings-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.holdings-section h3 {
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.no-holdings {
+  color: #6b7c8f;
+  font-style: italic;
+}
+
+.holdings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.holding-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.holding-symbol {
+  color: #72e4b9;
+  font-weight: 700;
+}
+
+.holding-amount {
+  color: #ffffff;
+  font-family: monospace;
+}
+
+/* Danger zone improvements */
+.delete-confirm {
+  padding: 20px;
+  background: rgba(255, 100, 100, 0.1);
+  border: 1px solid rgba(255, 100, 100, 0.3);
+  border-radius: 12px;
+}
+
+.delete-confirm p {
+  color: #ff9b8f;
+  margin-bottom: 16px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.confirm-delete-btn {
+  padding: 10px 20px;
+  background: #ff6464;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancel-delete-btn {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.danger-btn.secondary {
+  background: rgba(255, 186, 73, 0.2);
+  color: #ffba49;
+  border: 1px solid rgba(255, 186, 73, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stats-dashboard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .trades-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-box {
+    min-width: 100%;
+  }
+  
+  .filter-group {
+    justify-content: space-between;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .account-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+  }
+  
+  .tab-btn {
+    white-space: nowrap;
+  }
+}
