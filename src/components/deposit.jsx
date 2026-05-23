@@ -56,22 +56,22 @@ const Deposit = () => {
 
   const validateForm = () => {
     if (!selectedMethod) {
-      addNotification('error', 'Please select a payment method');
+      addNotification('Please select a payment method', 'error');
       return false;
     }
 
     if (!amount || parseFloat(amount) <= 0) {
-      addNotification('error', 'Please enter a valid amount greater than 0');
+      addNotification('Please enter a valid amount greater than 0', 'error');
       return false;
     }
 
     if (parseFloat(amount) < 10) {
-      addNotification('error', 'Minimum deposit amount is $10');
+      addNotification('Minimum deposit amount is $10', 'error');
       return false;
     }
 
     if (parseFloat(amount) > 50000) {
-      addNotification('error', 'Maximum deposit amount is $50,000');
+      addNotification('Maximum deposit amount is $50,000', 'error');
       return false;
     }
 
@@ -79,41 +79,41 @@ const Deposit = () => {
     
     if (selectedMethod === 'card') {
       if (!cardNumber || cardNumber.replace(/\s/g, '').length !== 16) {
-        addNotification('error', 'Please enter a valid 16-digit card number');
+        addNotification('Please enter a valid 16-digit card number', 'error');
         return false;
       }
       if (!expiryDate || !/^\d{2}\/\d{2}$/.test(expiryDate)) {
-        addNotification('error', 'Please enter expiry date in MM/YY format');
+        addNotification('Please enter expiry date in MM/YY format', 'error');
         return false;
       }
       if (!cvv || cvv.length !== 3) {
-        addNotification('error', 'Please enter a valid 3-digit CVV');
+        addNotification('Please enter a valid 3-digit CVV', 'error');
         return false;
       }
     }
 
     if (selectedMethod === 'bank') {
       if (!bankName) {
-        addNotification('error', 'Please enter bank name');
+        addNotification('Please enter bank name', 'error');
         return false;
       }
       if (!accountNumber || accountNumber.length < 8) {
-        addNotification('error', 'Please enter a valid account number');
+        addNotification('Please enter a valid account number', 'error');
         return false;
       }
       if (!routingNumber || routingNumber.length !== 9) {
-        addNotification('error', 'Please enter a valid 9-digit routing number');
+        addNotification('Please enter a valid 9-digit routing number', 'error');
         return false;
       }
     }
 
     if (selectedMethod === 'paypal' && !paypalEmail) {
-      addNotification('error', 'Please enter your PayPal email');
+      addNotification('Please enter your PayPal email', 'error');
       return false;
     }
 
     if (selectedMethod === 'crypto' && !cryptoAddress) {
-      addNotification('error', 'Please enter your crypto wallet address');
+      addNotification('Please enter your crypto wallet address', 'error');
       return false;
     }
 
