@@ -3,6 +3,7 @@ import Coins from "./components/coins";
 import Wallet from "./components/wallet";
 import Trades from "./components/trades";
 import Accounts from "./components/accounts";
+import Deposit from "./components/deposit";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 import "./App.css";
@@ -18,6 +19,7 @@ function App() {
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/trades" element={<Trades />} />
           <Route path="/accounts" element={<Accounts />} />
+          <Route path="/deposit" element={<Deposit />} />
         </Routes>
       </main>
 

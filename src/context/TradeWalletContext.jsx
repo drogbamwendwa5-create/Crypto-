@@ -70,6 +70,11 @@ export function TradeWalletProvider({ children }) {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
+  // Add balance (for deposits)
+  const addBalance = useCallback((amount) => {
+    setWallet(prev => ({ ...prev, balance: prev.balance + amount }));
+  }, []);
+
   const addTrade = (trade) => {
     setTrades((prev) => [trade, ...prev]);
     addNotification(`New trade added: ${trade.coin} ${trade.type}`, 'success');
@@ -186,11 +191,21 @@ export function TradeWalletProvider({ children }) {
       updatePreferences,
       addNotification,
       removeNotification,
+      addBalance,
       getPortfolioValue
     }}>
       {children}
     </TradeWalletContext.Provider>
   );
 }
+
+// Custom hook for using the context
+export const useTradeWallet = () => {
+  const context = React.useContext(TradeWalletContext);
+  if (!context) {
+    throw new Error('useTradeWallet must be used within a TradeWalletProvider');
+  }
+  return context;
+};
 
 export default TradeWalletContext;
