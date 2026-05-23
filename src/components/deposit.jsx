@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useTradeWallet } from '../context/TradeWalletContext';
 
 const Deposit = () => {
-  const { balance, addBalance, addNotification } = useTradeWallet();
+  const { wallet, addBalance, addNotification } = useTradeWallet();
+  const balance = wallet?.balance ?? 0;
   const [selectedMethod, setSelectedMethod] = useState('');
   const [amount, setAmount] = useState('');
   const [cardNumber, setCardNumber] = useState('');
@@ -20,10 +21,9 @@ const Deposit = () => {
       id: 'bank',
       name: 'Bank Transfer',
       icon: '🏦',
-      description: 'Direct transfer from your bank account',
+      description: 'Direct bank transfer',
       fee: 'Free',
-      time: '1-3 business days',
-      fields: ['bankName', 'accountNumber', 'routingNumber']
+      time: '1-3 business days'
     },
     {
       id: 'card',
@@ -31,8 +31,7 @@ const Deposit = () => {
       icon: '💳',
       description: 'Instant deposit with Visa or Mastercard',
       fee: '2.9%',
-      time: 'Instant',
-      fields: ['cardNumber', 'expiryDate', 'cvv']
+      time: 'Instant'
     },
     {
       id: 'paypal',
@@ -40,8 +39,7 @@ const Deposit = () => {
       icon: '🅿️',
       description: 'Quick and secure PayPal transfer',
       fee: '3.5%',
-      time: 'Instant',
-      fields: ['paypalEmail']
+      time: 'Instant'
     },
     {
       id: 'crypto',
@@ -49,105 +47,119 @@ const Deposit = () => {
       icon: '₿',
       description: 'Deposit using Bitcoin, Ethereum, or USDT',
       fee: 'Network fees only',
-      time: '10-60 minutes',
-      fields: ['cryptoAddress']
+      time: '10-60 minutes'
     }
   ];
 
+  const formatUSD = (value) => {
+    const parsed = parseFloat(value);
+    if (Number.isNaN(parsed)) return '0.00';
+    return parsed.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const validateEmail = (value) => /^\S+@\S+\.\S+$/.test(value);
+
   const validateForm = () => {
+    const parsedAmount = parseFloat(amount);
+
     if (!selectedMethod) {
       addNotification('Please select a payment method', 'error');
       return false;
     }
 
-    if (!amount || parseFloat(amount) <= 0) {
+    if (!amount || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
       addNotification('Please enter a valid amount greater than 0', 'error');
       return false;
     }
 
-    if (parseFloat(amount) < 10) {
+    if (parsedAmount < 10) {
       addNotification('Minimum deposit amount is $10', 'error');
       return false;
     }
 
-    if (parseFloat(amount) > 50000) {
+    if (parsedAmount > 50000) {
       addNotification('Maximum deposit amount is $50,000', 'error');
       return false;
     }
 
-    const method = paymentMethods.find(m => m.id === selectedMethod);
-    
     if (selectedMethod === 'card') {
-      if (!cardNumber || cardNumber.replace(/\s/g, '').length !== 16) {
+      const cleanedCard = cardNumber.replace(/\s+/g, '');
+      if (!/^[0-9]{16}$/.test(cleanedCard)) {
         addNotification('Please enter a valid 16-digit card number', 'error');
         return false;
       }
-      if (!expiryDate || !/^\d{2}\/\d{2}$/.test(expiryDate)) {
+      if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
         addNotification('Please enter expiry date in MM/YY format', 'error');
         return false;
       }
-      if (!cvv || cvv.length !== 3) {
-        addNotification('Please enter a valid 3-digit CVV', 'error');
+      if (!/^[0-9]{3,4}$/.test(cvv)) {
+        addNotification('Please enter a valid CVV', 'error');
         return false;
       }
     }
 
     if (selectedMethod === 'bank') {
-      if (!bankName) {
-        addNotification('Please enter bank name', 'error');
+      if (!bankName.trim()) {
+        addNotification('Please enter your bank name', 'error');
         return false;
       }
-      if (!accountNumber || accountNumber.length < 8) {
+      if (!/^[0-9]{8,17}$/.test(accountNumber)) {
         addNotification('Please enter a valid account number', 'error');
         return false;
       }
-      if (!routingNumber || routingNumber.length !== 9) {
+      if (!/^[0-9]{9}$/.test(routingNumber)) {
         addNotification('Please enter a valid 9-digit routing number', 'error');
         return false;
       }
     }
 
-    if (selectedMethod === 'paypal' && !paypalEmail) {
-      addNotification('Please enter your PayPal email', 'error');
+    if (selectedMethod === 'paypal' && !validateEmail(paypalEmail)) {
+      addNotification('Please enter a valid PayPal email', 'error');
       return false;
     }
 
-    if (selectedMethod === 'crypto' && !cryptoAddress) {
-      addNotification('Please enter your crypto wallet address', 'error');
+    if (selectedMethod === 'crypto' && cryptoAddress.trim().length < 15) {
+      addNotification('Please enter a valid crypto wallet address', 'error');
       return false;
     }
 
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const clearFields = () => {
+    setAmount('');
+    setCardNumber('');
+    setExpiryDate('');
+    setCvv('');
+    setBankName('');
+    setAccountNumber('');
+    setRoutingNumber('');
+    setPaypalEmail('');
+    setCryptoAddress('');
+    setSelectedMethod('');
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
 
-    setIsProcessing(true);
-
-    // Simulate processing delay
-    setTimeout(() => {
-      const depositAmount = parseFloat(amount);
-      addBalance(depositAmount);
-      
-      const method = paymentMethods.find(m => m.id === selectedMethod);
-      addNotification(`Successfully deposited $${depositAmount.toLocaleString()} via ${method.name}`, 'success');
-      
-      // Reset form
-      setAmount('');
-      setCardNumber('');
-      setExpiryDate('');
-      setCvv('');
-      setBankName('');
-      setAccountNumber('');
-      setRoutingNumber('');
-      setPaypalEmail('');
-      setCryptoAddress('');
-      setSelectedMethod('');
+        setIsProcessing(true);
+        setTimeout(() => {
+      const parsedAmount = parseFloat(amount);
+      addBalance(parsedAmount);
+      const currentMethod = paymentMethods.find((method) => method.id === selectedMethod);
+      addNotification(`Successfully deposited $${formatUSD(parsedAmount)} via ${currentMethod?.name || 'selected method'}`, 'success');
+      clearFields();
       setIsProcessing(false);
-    }, 2000);
+        }, 1500);
+  };
+
+  const getFee = () => {
+    const parsed = parseFloat(amount);
+    if (Number.isNaN(parsed)) return 0;
+    if (selectedMethod === 'card') return parsed * 0.029;
+    if (selectedMethod === 'paypal') return parsed * 0.035;
+    return 0;
   };
 
   const renderMethodFields = () => {
@@ -156,8 +168,9 @@ const Deposit = () => {
         return (
           <div className="form-fields">
             <div className="form-group">
-              <label>Card Number</label>
+              <label htmlFor="cardNumber">Card Number</label>
               <input
+                id="cardNumber"
                 type="text"
                 placeholder="1234 5678 9012 3456"
                 value={cardNumber}
@@ -167,8 +180,9 @@ const Deposit = () => {
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label>Expiry Date</label>
+                <label htmlFor="expiryDate">Expiry Date</label>
                 <input
+                  id="expiryDate"
                   type="text"
                   placeholder="MM/YY"
                   value={expiryDate}
@@ -177,25 +191,26 @@ const Deposit = () => {
                 />
               </div>
               <div className="form-group">
-                <label>CVV</label>
+                <label htmlFor="cvv">CVV</label>
                 <input
+                  id="cvv"
                   type="text"
                   placeholder="123"
                   value={cvv}
                   onChange={(e) => setCvv(e.target.value)}
-                  maxLength="3"
+                  maxLength="4"
                 />
               </div>
             </div>
           </div>
         );
-
       case 'bank':
         return (
           <div className="form-fields">
             <div className="form-group">
-              <label>Bank Name</label>
+              <label htmlFor="bankName">Bank Name</label>
               <input
+                id="bankName"
                 type="text"
                 placeholder="e.g., Chase, Bank of America"
                 value={bankName}
@@ -203,8 +218,9 @@ const Deposit = () => {
               />
             </div>
             <div className="form-group">
-              <label>Account Number</label>
+              <label htmlFor="accountNumber">Account Number</label>
               <input
+                id="accountNumber"
                 type="text"
                 placeholder="Enter your account number"
                 value={accountNumber}
@@ -213,8 +229,9 @@ const Deposit = () => {
               />
             </div>
             <div className="form-group">
-              <label>Routing Number</label>
+              <label htmlFor="routingNumber">Routing Number</label>
               <input
+                id="routingNumber"
                 type="text"
                 placeholder="9-digit routing number"
                 value={routingNumber}
@@ -224,13 +241,13 @@ const Deposit = () => {
             </div>
           </div>
         );
-
       case 'paypal':
         return (
           <div className="form-fields">
             <div className="form-group">
-              <label>PayPal Email</label>
+              <label htmlFor="paypalEmail">PayPal Email</label>
               <input
+                id="paypalEmail"
                 type="email"
                 placeholder="your@email.com"
                 value={paypalEmail}
@@ -239,13 +256,13 @@ const Deposit = () => {
             </div>
           </div>
         );
-
       case 'crypto':
         return (
           <div className="form-fields">
             <div className="form-group">
-              <label>Crypto Wallet Address</label>
+              <label htmlFor="cryptoAddress">Crypto Wallet Address</label>
               <input
+                id="cryptoAddress"
                 type="text"
                 placeholder="Enter your BTC, ETH, or USDT address"
                 value={cryptoAddress}
@@ -257,7 +274,6 @@ const Deposit = () => {
             </div>
           </div>
         );
-
       default:
         return null;
     }
@@ -277,7 +293,6 @@ const Deposit = () => {
             <div className="balance-amount">${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
             <p className="balance-note">Available for trading immediately</p>
           </div>
-
           <div className="security-badges">
             <div className="badge">
               <span>🔒</span> SSL Encrypted
@@ -294,11 +309,11 @@ const Deposit = () => {
         <div className="deposit-form-container">
           <form onSubmit={handleSubmit} className="deposit-form">
             <h2>Select Payment Method</h2>
-            
             <div className="payment-methods-grid">
               {paymentMethods.map((method) => (
-                <div
+                <button
                   key={method.id}
+                  type="button"
                   className={`payment-method-card ${selectedMethod === method.id ? 'selected' : ''}`}
                   onClick={() => setSelectedMethod(method.id)}
                 >
@@ -311,10 +326,8 @@ const Deposit = () => {
                       <span className="time">{method.time}</span>
                     </div>
                   </div>
-                  {selectedMethod === method.id && (
-                    <div className="checkmark">✓</div>
-                  )}
-                </div>
+                  {selectedMethod === method.id && <div className="checkmark">✓</div>}
+                </button>
               ))}
             </div>
 
@@ -348,27 +361,15 @@ const Deposit = () => {
                   <h3>Deposit Summary</h3>
                   <div className="summary-row">
                     <span>Amount:</span>
-                    <span>${amount ? parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}</span>
+                    <span>${formatUSD(amount)}</span>
                   </div>
                   <div className="summary-row">
                     <span>Fee:</span>
-                    <span>
-                      {amount && selectedMethod === 'card' 
-                        ? `$${(parseFloat(amount) * 0.029).toFixed(2)}`
-                        : amount && selectedMethod === 'paypal'
-                        ? `$${(parseFloat(amount) * 0.035).toFixed(2)}`
-                        : '$0.00'}
-                    </span>
+                    <span>${formatUSD(getFee())}</span>
                   </div>
                   <div className="summary-row total">
                     <span>Total:</span>
-                    <span>
-                      ${amount && selectedMethod === 'card'
-                        ? (parseFloat(amount) * 1.029).toFixed(2)
-                        : amount && selectedMethod === 'paypal'
-                        ? (parseFloat(amount) * 1.035).toFixed(2)
-                        : amount || '0.00'}
-                    </span>
+                    <span>${formatUSD(parseFloat(amount || 0) + getFee())}</span>
                   </div>
                 </div>
 
@@ -379,7 +380,7 @@ const Deposit = () => {
                       Processing...
                     </>
                   ) : (
-                    `Deposit $${amount ? parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}`
+                    `Deposit $${formatUSD(amount)}`
                   )}
                 </button>
               </>
