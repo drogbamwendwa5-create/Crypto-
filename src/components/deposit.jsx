@@ -133,7 +133,7 @@ const Deposit = () => {
       addBalance(depositAmount);
       
       const method = paymentMethods.find(m => m.id === selectedMethod);
-      addNotification('success', `Successfully deposited $${depositAmount.toLocaleString()} via ${method.name}`);
+      addNotification(`Successfully deposited $${depositAmount.toLocaleString()} via ${method.name}`, 'success');
       
       // Reset form
       setAmount('');
