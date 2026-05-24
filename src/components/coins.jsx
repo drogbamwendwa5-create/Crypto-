@@ -22,23 +22,36 @@ function Coins() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchCoins = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const response = await fetch(
           "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true",
         );
         if (!response.ok) throw new Error(`Failed to fetch coins: ${response.status}`);
         const data = await response.json();
-        setCoins(data);
-        setSelectedCoinId(data[0]?.id ?? "");
+        if (isMounted) {
+          setCoins(data);
+          setSelectedCoinId(data[0]?.id ?? "");
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : String(err));
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchCoins();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (loading) return (
@@ -127,8 +140,17 @@ function PriceChart({ coin, coins, onSelectCoin, selectedCoinId }) {
   useEffect(() => {
     // Initialize with current price
     priceHistoryRef.current = [{ price: coin.current_price, time: Date.now() }];
+    setCurrentPrice(coin.current_price);
+    
+    // Reset candle data when coin changes
+    setCandleData([{
+      open: coin.current_price,
+      high: coin.current_price,
+      low: coin.current_price,
+      close: coin.current_price,
+    }]);
 
-    // Fetch price every 10 seconds
+    // Fetch price every 20 seconds
     const fetchPrice = async () => {
       try {
         const response = await fetch(
@@ -141,18 +163,17 @@ function PriceChart({ coin, coins, onSelectCoin, selectedCoinId }) {
         
         priceHistoryRef.current.push({ price: newPrice, time: Date.now() });
         
-        // Keep last 60 data points (10 minutes of data at 10s intervals)
+        // Keep last 60 data points (20 minutes of data at 20s intervals)
         if (priceHistoryRef.current.length > 60) {
           priceHistoryRef.current.shift();
         }
 
-        // Update candles - create new candle every 5 price updates (50 seconds per candle)
+        // Update candles - create new candle every 2 price updates (40 seconds per candle)
         setCandleData(prev => {
-          const lastCandle = prev[prev.length - 1];
           const historyLength = priceHistoryRef.current.length;
           
-          // Create new candle every 5 updates
-          if (historyLength % 5 === 1 && historyLength > 1) {
+          // Create new candle every 2 updates (40 seconds)
+          if (historyLength % 2 === 1 && historyLength > 1) {
             const newCandle = {
               open: newPrice,
               high: newPrice,
@@ -162,6 +183,7 @@ function PriceChart({ coin, coins, onSelectCoin, selectedCoinId }) {
             return [...prev.slice(-19), newCandle]; // Keep last 20 candles
           } else {
             // Update existing candle
+            const lastCandle = prev[prev.length - 1];
             const updatedCandle = {
               ...lastCandle,
               high: Math.max(lastCandle.high, newPrice),
@@ -179,8 +201,8 @@ function PriceChart({ coin, coins, onSelectCoin, selectedCoinId }) {
     // Initial fetch
     fetchPrice();
     
-    // Set up 10-second interval
-    intervalRef.current = setInterval(fetchPrice, 10000);
+    // Set up 20-second interval
+    intervalRef.current = setInterval(fetchPrice, 20000);
 
     return () => {
       if (intervalRef.current) {
@@ -208,7 +230,7 @@ function PriceChart({ coin, coins, onSelectCoin, selectedCoinId }) {
     <section className="price-chart-panel" aria-label={`${coin.name} price chart`}>
       <div className="price-chart-header">
         <div>
-          <span>Live price chart (updates every 10s)</span>
+          <span>Live price chart (updates every 20s)</span>
           <h2>{coin.name}</h2>
           <p>{fullCurrency.format(scaledMin)} - {fullCurrency.format(scaledMax)}</p>
         </div>
