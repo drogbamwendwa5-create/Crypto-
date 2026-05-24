@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import TradeWalletContext from "../context/TradeWalletContext";
 
 const compactCurrency = new Intl.NumberFormat("en-US", {
@@ -13,12 +13,6 @@ const fullCurrency = new Intl.NumberFormat("en-US", {
   currency: "USD",
   maximumFractionDigits: 2,
   style: "currency",
-});
-
-const compactNumber = new Intl.NumberFormat("en-US", {
-  compactDisplay: "short",
-  maximumFractionDigits: 2,
-  notation: "compact",
 });
 
 function Coins() {
@@ -115,26 +109,108 @@ function Coins() {
 }
 
 function PriceChart({ coin, coins, onSelectCoin, selectedCoinId }) {
-  const prices = coin.sparkline_in_7d?.price || [];
-  const chartPrices = prices.length > 1 ? prices : [coin.current_price];
-  const minPrice = Math.min(...chartPrices);
-  const maxPrice = Math.max(...chartPrices);
-  const range = maxPrice - minPrice || 1;
-  const points = chartPrices.map((price, index) => {
-    const x = (index / Math.max(chartPrices.length - 1, 1)) * 100;
-    const y = 100 - ((price - minPrice) / range) * 100;
-    return `${x},${y}`;
-  }).join(" ");
-  const dailyChange = coin.price_change_percentage_24h ?? 0;
+  const [candleData, setCandleData] = useState(() => {
+    const initialCandle = {
+      open: coin.current_price,
+      high: coin.current_price,
+      low: coin.current_price,
+      close: coin.current_price,
+    };
+    return [initialCandle];
+  });
+  const [currentPrice, setCurrentPrice] = useState(coin.current_price);
+  const intervalRef = useRef(null);
+  const priceHistoryRef = useRef([]);
+  
   const { addTradeFromChart } = useContext(TradeWalletContext);
+
+  useEffect(() => {
+    // Initialize with current price
+    priceHistoryRef.current = [{ price: coin.current_price, time: Date.now() }];
+
+    // Fetch price every 10 seconds
+    const fetchPrice = async () => {
+      try {
+        const response = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${coin.id}&vs_currencies=usd`
+        );
+        if (!response.ok) return;
+        const data = await response.json();
+        const newPrice = data[coin.id]?.usd || coin.current_price;
+        setCurrentPrice(newPrice);
+        
+        priceHistoryRef.current.push({ price: newPrice, time: Date.now() });
+        
+        // Keep last 60 data points (10 minutes of data at 10s intervals)
+        if (priceHistoryRef.current.length > 60) {
+          priceHistoryRef.current.shift();
+        }
+
+        // Update candles - create new candle every 5 price updates (50 seconds per candle)
+        setCandleData(prev => {
+          const lastCandle = prev[prev.length - 1];
+          const historyLength = priceHistoryRef.current.length;
+          
+          // Create new candle every 5 updates
+          if (historyLength % 5 === 1 && historyLength > 1) {
+            const newCandle = {
+              open: newPrice,
+              high: newPrice,
+              low: newPrice,
+              close: newPrice,
+            };
+            return [...prev.slice(-19), newCandle]; // Keep last 20 candles
+          } else {
+            // Update existing candle
+            const updatedCandle = {
+              ...lastCandle,
+              high: Math.max(lastCandle.high, newPrice),
+              low: Math.min(lastCandle.low, newPrice),
+              close: newPrice,
+            };
+            return [...prev.slice(0, -1), updatedCandle];
+          }
+        });
+      } catch (err) {
+        console.error("Failed to fetch price:", err);
+      }
+    };
+
+    // Initial fetch
+    fetchPrice();
+    
+    // Set up 10-second interval
+    intervalRef.current = setInterval(fetchPrice, 10000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [coin.id]);
+
+  // Calculate chart dimensions
+  const allPrices = candleData.flatMap(c => [c.high, c.low]);
+  const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : currentPrice * 0.99;
+  const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : currentPrice * 1.01;
+  const range = maxPrice - minPrice || 1;
+  const padding = range * 0.1;
+  const scaledMin = minPrice - padding;
+  const scaledMax = maxPrice + padding;
+  const scaledRange = scaledMax - scaledMin;
+
+  const candleWidth = 80 / Math.max(candleData.length, 1);
+  const gap = 2;
+
+  const dailyChange = coin.price_change_percentage_24h ?? 0;
 
   return (
     <section className="price-chart-panel" aria-label={`${coin.name} price chart`}>
       <div className="price-chart-header">
         <div>
-          <span>7 day price development</span>
+          <span>Live price chart (updates every 10s)</span>
           <h2>{coin.name}</h2>
-          <p>{fullCurrency.format(minPrice)} - {fullCurrency.format(maxPrice)}</p>
+          <p>{fullCurrency.format(scaledMin)} - {fullCurrency.format(scaledMax)}</p>
         </div>
 
         <label className="coin-selector">
@@ -149,21 +225,48 @@ function PriceChart({ coin, coins, onSelectCoin, selectedCoinId }) {
 
       <div className="price-chart-body">
         <div className="chart-value">
-          <strong>{fullCurrency.format(coin.current_price)}</strong>
+          <strong>{fullCurrency.format(currentPrice)}</strong>
           <span className={dailyChange >= 0 ? "change-positive" : "change-negative"}>
             {dailyChange >= 0 ? "+" : ""}{dailyChange.toFixed(2)}%
           </span>
         </div>
 
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img">
-          <defs>
-            <linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(114, 228, 185, 0.34)" />
-              <stop offset="100%" stopColor="rgba(114, 228, 185, 0)" />
-            </linearGradient>
-          </defs>
-          <polygon points={`0,100 ${points} 100,100`} fill="url(#chartFill)" />
-          <polyline points={points} fill="none" stroke="#72e4b9" strokeWidth="2.5" />
+          {candleData.map((candle, index) => {
+            const x = 10 + index * (candleWidth + gap);
+            const isGreen = candle.close >= candle.open;
+            const color = isGreen ? "#72e4b9" : "#ef4444";
+            
+            const highY = 100 - ((candle.high - scaledMin) / scaledRange) * 100;
+            const lowY = 100 - ((candle.low - scaledMin) / scaledRange) * 100;
+            const openY = 100 - ((candle.open - scaledMin) / scaledRange) * 100;
+            const closeY = 100 - ((candle.close - scaledMin) / scaledRange) * 100;
+            
+            const bodyTop = Math.min(openY, closeY);
+            const bodyHeight = Math.max(Math.abs(closeY - openY), 1);
+            
+            return (
+              <g key={index}>
+                {/* Wick */}
+                <line
+                  x1={x + candleWidth / 2}
+                  y1={highY}
+                  x2={x + candleWidth / 2}
+                  y2={lowY}
+                  stroke={color}
+                  strokeWidth="1"
+                />
+                {/* Body */}
+                <rect
+                  x={x}
+                  y={bodyTop}
+                  width={candleWidth}
+                  height={bodyHeight}
+                  fill={color}
+                />
+              </g>
+            );
+          })}
         </svg>
       </div>
 
@@ -173,9 +276,9 @@ function PriceChart({ coin, coins, onSelectCoin, selectedCoinId }) {
           onClick={() => {
             const amount = window.prompt(`Enter amount of ${coin.symbol} to buy:`, "0.1");
             if (!amount) return;
-            const res = addTradeFromChart({ coinSymbol: coin.symbol, coinName: coin.name, type: "buy", price: coin.current_price, amount });
+            const res = addTradeFromChart({ coinSymbol: coin.symbol, coinName: coin.name, type: "buy", price: currentPrice, amount });
             if (!res || !res.success) return alert(res?.message || "Could not complete buy");
-            alert(`Bought ${amount} ${coin.symbol} at ${coin.current_price}`);
+            alert(`Bought ${amount} ${coin.symbol} at ${currentPrice}`);
           }}
         >Buy</button>
 
@@ -184,9 +287,9 @@ function PriceChart({ coin, coins, onSelectCoin, selectedCoinId }) {
           onClick={() => {
             const amount = window.prompt(`Enter amount of ${coin.symbol} to sell:`, "0.1");
             if (!amount) return;
-            const res = addTradeFromChart({ coinSymbol: coin.symbol, coinName: coin.name, type: "sell", price: coin.current_price, amount });
+            const res = addTradeFromChart({ coinSymbol: coin.symbol, coinName: coin.name, type: "sell", price: currentPrice, amount });
             if (!res || !res.success) return alert(res?.message || "Could not complete sell");
-            alert(`Sold ${amount} ${coin.symbol} at ${coin.current_price}`);
+            alert(`Sold ${amount} ${coin.symbol} at ${currentPrice}`);
           }}
         >Sell</button>
       </div>
@@ -195,9 +298,6 @@ function PriceChart({ coin, coins, onSelectCoin, selectedCoinId }) {
 }
 
 function CoinCard({ coin }) {
-  const dailyChange = coin.price_change_percentage_24h ?? 0;
-  const changeClass = dailyChange >= 0 ? "change-positive" : "change-negative";
-
   return (
     <article className="coin-card">
       <div className="coin-card__top">
