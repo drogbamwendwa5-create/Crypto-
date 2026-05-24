@@ -185,6 +185,60 @@
   background: #17211d;
 }
 
+.chart-settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+  width: 100%;
+  margin-top: 18px;
+}
+
+.chart-select {
+  display: block;
+}
+
+.chart-select span {
+  display: block;
+  color: #a9b9ac;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.chart-select select {
+  width: 100%;
+  appearance: none;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(23, 33, 29, 0.96);
+  color: #ffffff;
+}
+
+.candle-chart-wrapper {
+  position: relative;
+  min-height: 280px;
+  border-radius: 8px;
+  background: rgba(12, 20, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 14px;
+}
+
+.chart-loading,
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  color: #d0dccf;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  font-size: 0.98rem;
+}
+
 .price-chart-body {
   position: relative;
   min-height: 260px;
