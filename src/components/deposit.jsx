@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTradeWallet } from '../context/TradeWalletContext';
 
 const Deposit = () => {
@@ -75,8 +75,6 @@ const Deposit = () => {
       return false;
     }
 
-    const method = paymentMethods.find(m => m.id === selectedMethod);
-    
     if (selectedMethod === 'card') {
       if (!cardNumber || cardNumber.replace(/\s/g, '').length !== 16) {
         addNotification('Please enter a valid 16-digit card number', 'error');
